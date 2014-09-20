@@ -44,11 +44,39 @@ class SpecTests: XCTestCase {
 
     func testGameGrid() {
         vc.stepper.value = 10
+        vc.stepper.sendActionsForControlEvents(UIControlEvents.ValueChanged)
         XCTAssertEqual(vc.cardViews.count, 20, "There should")
         for cardView in vc.cardViews {
             XCTAssertEqual(cardView.superview!, vc.view, "Should add cardView to the view hierarchy")
             XCTAssert(cardView.isMemberOfClass(CardView.self), "CardView should be instances of CardView")
         }
+    }
+
+    func testVariableLayout() {
+        func testLayout(pairs: Int) {
+            vc.stepper.value = Double(pairs)
+            vc.stepper.sendActionsForControlEvents(UIControlEvents.ValueChanged)
+            XCTAssertEqual(vc.cardViews.count, vc.cardsCount, "cardViews count should be \(vc.cardsCount)")
+            XCTAssertEqual(vc.cardViews.count, findCardViews().count, "cardViews is not in sync with view hierarchy")
+
+        }
+
+        testLayout(4)
+        // Test increase in cards count
+        testLayout(8)
+        // Test decrease in cards count
+        testLayout(2)
+    }
+
+    // return the card views actually in root view
+    private func findCardViews() -> [CardView] {
+        var cardViews = [CardView]()
+        for view in vc.view.subviews {
+            if let cardView = view as? CardView {
+                cardViews.append(cardView)
+            }
+        }
+        return cardViews
     }
     
 }

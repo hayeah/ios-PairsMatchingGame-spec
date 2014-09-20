@@ -41,5 +41,14 @@ class SpecTests: XCTestCase {
 
         XCTAssertEqual(vc.cardsCount, vc.pairsCount * 2, "cardsCount should be 2x of pairsCount")
     }
+
+    func testGameGrid() {
+        vc.stepper.value = 10
+        XCTAssertEqual(vc.cardViews.count, 20, "There should")
+        for cardView in vc.cardViews {
+            XCTAssertEqual(cardView.superview!, vc.view, "Should add cardView to the view hierarchy")
+            XCTAssert(cardView.isMemberOfClass(CardView.self), "CardView should be instances of CardView")
+        }
+    }
     
 }

@@ -32,5 +32,14 @@ class SpecTests: XCTestCase {
         XCTAssert(vc.revealButton.isMemberOfClass(UIButton.self), "The revealButton property should be an UIButton")
         XCTAssert(vc.shuffleButton.isMemberOfClass(UIButton.self), "The shuffleButton property should be an UIButton")
     }
+
+    func testPairsCount() {
+        vc.stepper.value = 3
+        XCTAssertEqual(vc.pairsCount, 3, "pairsCount should be equal to stepper value")
+        vc.stepper.value = 6
+        XCTAssertEqual(vc.pairsCount, 6, "pairsCount should be equal to stepper value")
+
+        XCTAssertEqual(vc.cardsCount, vc.pairsCount * 2, "cardsCount should be 2x of pairsCount")
+    }
     
 }

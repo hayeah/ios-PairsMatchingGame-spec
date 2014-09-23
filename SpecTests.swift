@@ -78,6 +78,26 @@ class SpecTests: XCTestCase {
         }
     }
 
+    func testRevealCards() {
+        for cardView in findCardViews() {
+            XCTAssertFalse(cardView.selected, "cardView should initially be unselected.")
+            XCTAssertTrue(cardView.frontLayer.hidden,"should initially hide the front of the card.")
+            XCTAssertFalse(cardView.backLayer.hidden,"should initially show the back of the card.")
+            // tap it
+            cardView.sendActionsForControlEvents(UIControlEvents.TouchUpInside)
+            XCTAssertTrue(cardView.selected, "cardView should be selected after tap.")
+            XCTAssertFalse(cardView.frontLayer.hidden,"should show the front of the card if selected.")
+            XCTAssertTrue(cardView.backLayer.hidden,"should hide the back of the card if selected.")
+        }
+    }
+
+    func testRevealAllButton() {
+        vc.revealButton.sendActionsForControlEvents(UIControlEvents.TouchUpInside)
+        for cardView in findCardViews() {
+            XCTAssertTrue(cardView.selected,"Reveal button should select all cardViews")
+        }
+    }
+
     // return the card views actually in root view
     private func findCardViews() -> [CardView] {
         var cardViews = [CardView]()

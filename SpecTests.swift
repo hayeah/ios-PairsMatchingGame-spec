@@ -68,6 +68,17 @@ class SpecTests: XCTestCase {
         testLayout(2)
     }
 
+    func testCardViewWithBorderAndPadding() {
+        for cardView in findCardViews() {
+            XCTAssertEqual(cardView.frontLayer.superlayer, cardView.layer, "frontLayer should be a sublayer of the view's layer")
+            XCTAssertEqual(Float(cardView.layer.borderWidth), Float(1.0), "The view layer should draw a border")
+
+
+            cardView.layoutSubviews()
+            XCTAssertEqual(cardView.frontLayer.frame, CGRectInset(cardView.layer.bounds, 2, 2) , "The frontLayer should be insetted 2 points")
+        }
+    }
+
     // return the card views actually in root view
     private func findCardViews() -> [CardView] {
         var cardViews = [CardView]()

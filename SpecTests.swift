@@ -98,6 +98,23 @@ class SpecTests: XCTestCase {
         }
     }
 
+    func testAssignRandomCards() {
+        for cardView in findCardViews() {
+            XCTAssertNotNil(cardView.card, "Should assign a card to cardView")
+
+            // try to find another random card
+            var anotherCard: Card = cardView.card!
+            while anotherCard == cardView.card! {
+                anotherCard = Card.random()
+            }
+
+            let oldImage = cardView.frontLayer.contents as CGImageRef
+            cardView.card = anotherCard
+            let newImage = cardView.frontLayer.contents as CGImageRef
+            XCTAssert(oldImage !== newImage, "Changing the card should change the frontLayer's contents")
+        }
+    }
+
     // return the card views actually in root view
     private func findCardViews() -> [CardView] {
         var cardViews = [CardView]()

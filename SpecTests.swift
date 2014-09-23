@@ -115,6 +115,54 @@ class SpecTests: XCTestCase {
         }
     }
 
+    func testAssignRandomPairs() {
+        matchPairs()
+    }
+
+    func testShuffleCards() {
+        let card = Card(rank: .Ace, suit: .Spade)
+        // Put the cards in an invalid state. We will expect shuffle to put it back to a valid state.
+        eachCardViews { $0.card = card }
+        vc.shuffleButton.sendActionsForControlEvents(UIControlEvents.TouchUpInside)
+        matchPairs()
+        // Don't want to slow things down by doing async testing...
+//        let expect = expectationWithDescription("Will hide cards")
+//        delay(1.2) {
+//            self.eachCardViews {
+//                XCTAssertFalse($0.selected, "Should hide cardView after shuffle.")
+//                println("assert not selected")
+//            }
+//            expect.fulfill()
+//        }
+//        self.waitForExpectationsWithTimeout(2, nil)
+    }
+
+    func testShuffleWhenLayoutChanged() {
+        let card = Card(rank: .Ace, suit: .Spade)
+        eachCardViews { $0.card = card }
+        setPairs(10)
+        matchPairs()
+    }
+
+    private func matchPairs() {
+        var matches = [String:Int]()
+
+        for cardView in findCardViews() {
+            let key = cardView.card!.imageName()
+            if let n = matches[key] {
+                matches[key] = n + 1
+            } else {
+                matches[key] = 1
+            }
+        }
+
+        XCTAssertEqual(matches.count, vc.pairsCount, "Should find \(vc.pairsCount) different kinds, but found: \(matches.count).")
+
+        for (k,v) in matches {
+            XCTAssertEqual(v, 2, "Should find two of \(k) but found: \(v)")
+        }
+    }
+
     // return the card views actually in root view
     private func findCardViews() -> [CardView] {
         var cardViews = [CardView]()
@@ -124,6 +172,17 @@ class SpecTests: XCTestCase {
             }
         }
         return cardViews
+    }
+
+    private func setPairs(pairs: Int) {
+        vc.stepper.value = Double(pairs)
+        vc.stepper.sendActionsForControlEvents(UIControlEvents.ValueChanged)
+    }
+
+    private func eachCardViews(block: (CardView) -> ()) {
+        for cardView in findCardViews() {
+            block(cardView)
+        }
     }
     
 }

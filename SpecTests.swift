@@ -9,7 +9,9 @@ class SpecTests: XCTestCase {
         super.setUp()
         let board = UIStoryboard(name: "Main", bundle: NSBundle(forClass: self.dynamicType))
         vc = board.instantiateInitialViewController() as ViewController
-        // trigger the view to load by accessing the view property ...
+        // Need to assign view controller to root for UIAlertController to work in test environment.
+        UIApplication.sharedApplication().keyWindow!.rootViewController = vc
+        // Trigger the view to load by accessing the view property ...
         vc.view.subviews
     }
     
@@ -164,6 +166,92 @@ class SpecTests: XCTestCase {
         }
     }
 
+    private func assignKnownCards(cardViews: [CardView]) {
+        var deck = Card.fullDeck()
+        var cards = [Card]()
+        for i in 0..<vc.pairsCount {
+            let card = deck[i]
+            cards.append(card)
+            cards.append(card)
+        }
+
+        for (i,cardView) in enumerate(cardViews) {
+            cardView.card = cards[i]
+        }
+    }
+
+    private func tap(view: UIControl) {
+        view.sendActionsForControlEvents(UIControlEvents.TouchUpInside)
+    }
+
+    func testMatchSelectedPairs() {
+        setPairs(2)
+        let cardViews = findCardViews()
+        assignKnownCards(cardViews)
+
+        func tapCard(index: Int) {
+            tap(cardViews[index])
+        }
+
+        XCTAssertEqual(vc.matchedPairs, 0, "Should have 0 matched pairs initially")
+
+        // 1. Select the same card many times should keep it selected.
+        tapCard(0)
+        XCTAssertTrue(cardViews[0].selected, "Tap a card once should select it")
+        tapCard(0)
+        XCTAssertTrue(cardViews[0].selected, "Tap a card twice should keep it selected")
+        XCTAssertEqual(vc.matchedPairs, 0, "Select the same card shouldn't be a match")
+
+        // 2. Should match a pair.
+        tapCard(1)
+        XCTAssertEqual(vc.matchedPairs, 1, "Selecting matching cards should increment matchedPairs")
+        XCTAssertTrue(cardViews[0].selected, "Card should be kept selected after match")
+        XCTAssertTrue(cardViews[1].selected, "Card should be kept selected after match")
+
+        tapCard(2)
+        tapCard(3)
+        XCTAssertEqual(vc.matchedPairs, 2, "Selecting matching cards should increment matchedPairs")
+
+
+
+    }
+
+    func testResetScoreAfterShuffle() {
+        setPairs(2)
+        let cardViews = findCardViews()
+        assignKnownCards(cardViews)
+
+        func tapCard(index: Int) {
+            tap(cardViews[index])
+        }
+
+        tapCard(0)
+        tapCard(1)
+        XCTAssertEqual(vc.matchedPairs, 1, "Should have 1 matching pair.")
+        vc.shuffleCards()
+        XCTAssertEqual(vc.matchedPairs, 0, "Should reset matchedPairs after shuffle.")
+
+    }
+
+    func testWinGame() {
+        setPairs(2)
+        let cardViews = findCardViews()
+        assignKnownCards(cardViews)
+
+        func tapCard(index: Int) {
+            tap(cardViews[index])
+        }
+
+        tapCard(0);tapCard(1)
+        tapCard(2);tapCard(3)
+
+        // Show alert controller
+        XCTAssertNotNil(vc.presentedViewController, "Should present the alert controller after winning game")
+        if let alert = vc.presentedViewController {
+            XCTAssert(alert.isMemberOfClass(UIAlertController.self), "Should present the alert controller after winning game.")
+        }
+    }
+
     // return the card views actually in root view
     private func findCardViews() -> [CardView] {
         var cardViews = [CardView]()
@@ -178,6 +266,7 @@ class SpecTests: XCTestCase {
     private func setPairs(pairs: Int) {
         vc.stepper.value = Double(pairs)
         vc.stepper.sendActionsForControlEvents(UIControlEvents.ValueChanged)
+        vc.hideCards() // immediately hide cards
     }
 
     private func eachCardViews(block: (CardView) -> ()) {
